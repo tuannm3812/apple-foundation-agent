@@ -1,8 +1,8 @@
 """
-Foundation Debugger: Enterprise Workspace Edition.
+Foundation Debugger: Enterprise Workspace Edition v2.0.
 
-Fixed alignment issues by enforcing a minimum height on text blocks,
-ensuring images and buttons always align perfectly horizontally.
+Features a 5-stage deep-dive assessment, 5 distinct developer archetypes,
+base64 background injection, and a premium SaaS UI.
 """
 
 import time
@@ -12,7 +12,6 @@ import streamlit as st
 
 
 def get_base64_image(image_path: str) -> str:
-    """Loads a local image and converts it to base64 for CSS injection."""
     if os.path.exists(image_path):
         with open(image_path, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
@@ -20,15 +19,13 @@ def get_base64_image(image_path: str) -> str:
 
 
 def inject_custom_css() -> None:
-    # Load the background image
     bg_base64 = get_base64_image("images/workspace_background.png")
     bg_css = f"url('data:image/png;base64,{bg_base64}')" if bg_base64 else "none"
 
     custom_css = f"""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&family=Inter:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
-        /* 1. App Background with Base64 Image Injection */
         .stApp {{
             background-color: #0b0b0f;
             background-image: 
@@ -41,7 +38,6 @@ def inject_custom_css() -> None:
             color: #ffffff;
         }}
         
-        /* Typography */
         h1, h2, h3 {{ 
             font-family: 'Kanit', sans-serif !important;
             font-weight: 800 !important; 
@@ -49,44 +45,26 @@ def inject_custom_css() -> None:
             color: #ffffff !important;
         }}
         
-        /* ALIGNMENT FIX: min-height ensures short text doesn't pull elements up */
-        .column-header {{ 
-            font-size: 22px; 
-            font-weight: 800; 
-            font-family: 'Kanit', sans-serif; 
-            margin-bottom: 5px; 
-            color: #ffffff; 
-            min-height: 33px; 
-        }}
-        .column-text {{ 
-            font-size: 14px; 
-            color: #a1a1aa; 
-            font-family: 'Inter', sans-serif; 
-            margin-bottom: 15px; 
-            line-height: 1.5; 
-            min-height: 48px; /* Forces space for 2 lines of text */
-        }}
-        
         p, li {{ font-weight: 400 !important; line-height: 1.6; color: #a1a1aa; }}
         .accent-text {{ color: #ff5033; font-weight: 700; }}
 
-        .glass-card {{
-            background-color: rgba(20, 20, 25, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            margin-bottom: 24px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }}
+        # .glass-card {{
+        #     background-color: rgba(20, 20, 25, 0.6);
+        #     border: 1px solid rgba(255, 255, 255, 0.05);
+        #     border-radius: 12px;
+        #     padding: 40px;
+        #     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        #     margin-bottom: 24px;
+        #     backdrop-filter: blur(20px);
+        #     -webkit-backdrop-filter: blur(20px);
+        # }}
 
-        /* 2. PRIMARY BUTTONS */
+        /* PRIMARY BUTTONS (Action) */
         button[kind="primary"] {{
             background: linear-gradient(180deg, #ff5436 0%, #e63919 100%) !important;
             border: none !important;
             border-radius: 30px !important;
-            padding: 10px 24px !important;
+            padding: 12px 24px !important;
             width: 100% !important;
             transition: all 0.2s ease-in-out;
             box-shadow: 0 4px 14px rgba(255, 80, 51, 0.2) !important;
@@ -104,7 +82,28 @@ def inject_custom_css() -> None:
             filter: brightness(1.1);
         }}
 
-        /* Badges */
+        /* SECONDARY BUTTONS (Choices - Full Width Stacked) */
+        button[kind="secondary"] {{
+            background-color: rgba(255, 255, 255, 0.02) !important;
+            color: #e5e5e7 !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            padding: 16px 24px !important;
+            width: 100% !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
+            font-family: 'Inter', sans-serif !important;
+            transition: all 0.2s ease-in-out;
+            margin-bottom: 12px !important;
+        }}
+        button[kind="secondary"] p {{ margin: 0 !important; font-size: 15px !important; color: #e5e5e7 !important;}}
+        button[kind="secondary"] strong {{ color: #ffffff !important; font-weight: 600 !important; }}
+        button[kind="secondary"]:hover {{
+            border-color: #ff5033 !important;
+            background-color: rgba(255, 80, 51, 0.05) !important;
+            transform: translateX(4px);
+        }}
+
         .badge {{
             background-color: rgba(255, 80, 51, 0.15);
             color: #ff5033;
@@ -117,9 +116,8 @@ def inject_custom_css() -> None:
             text-transform: uppercase;
             letter-spacing: 1px;
         }}
-
-        /* Clean up column padding */
-        [data-testid="column"] {{ padding: 0 10px; }}
+        
+        .progress-text {{ font-family: 'Kanit', sans-serif; font-size: 14px; color: #ff5033; letter-spacing: 1px; margin-bottom: -10px; display: block; }}
     </style>
     """
     st.markdown(custom_css, unsafe_allow_html=True)
@@ -127,165 +125,183 @@ def inject_custom_css() -> None:
 
 def init_session() -> None:
     if 'stage' not in st.session_state:
-        st.session_state.stage = 1
+        st.session_state.stage = 0
     if 'scores' not in st.session_state:
-        st.session_state.scores = {"iPhone": 0, "MacStudio": 0, "iPadPro": 0}
+        st.session_state.scores = {
+            "Tactical": 0, "Architect": 0, "Catalyst": 0, "Visionary": 0, "Researcher": 0
+        }
 
 
 def run_app() -> None:
-    st.set_page_config(page_title="Foundation Workspace", layout="wide")
+    st.set_page_config(page_title="Foundation Workspace", layout="centered")
     inject_custom_css()
     init_session()
 
     st.markdown("<p style='font-weight: 700; font-size: 16px; color: #fff;'><span class='accent-text'>✦</span> Foundation</p>", unsafe_allow_html=True)
 
-    # ================= STAGE 1: THE CONTEXT =================
-    if st.session_state.stage == 1:
+    # ================= STAGE 0: THE CONTEXT =================
+    if st.session_state.stage == 0:
         st.markdown("""
-        <div style='text-align: center; margin-top: 60px; margin-bottom: 60px;'>
+        <div style='text-align: center; margin-top: 40px; margin-bottom: 50px;'>
             <h1 style='font-size: 64px; line-height: 1.1;'>Code, bugs, and recovery.<br><span class='accent-text'>Finally in one workflow.</span></h1>
-            <p style='font-size: 18px; max-width: 600px; margin: 20px auto;'>The diagnostic tool for workflows, priorities, and resilience — all in one fast workspace you'll actually enjoy using.</p>
+            <p style='font-size: 18px; max-width: 600px; margin: 20px auto;'>A 5-step diagnostic tool analyzing workflows, priorities, and resilience — all in one fast workspace you'll actually enjoy using.</p>
         </div>
         """, unsafe_allow_html=True)
         
-        _, col_center, _ = st.columns([1, 2, 1])
-        with col_center:
-            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-            st.markdown("<div class='badge'>Incident Log v1.0</div>", unsafe_allow_html=True)
-            st.write("**ALERT:** Critical system failure detected during end-to-end NLP project. Accidentally deleted the core preprocessing script without committing to Git. A week of critical logic is missing.")
-            st.write("")
-            if st.button("EXECUTE DIAGNOSTIC PROTOCOL", type="primary"):
-                st.session_state.stage = 2
-                st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-
-    # ================= STAGE 2: INITIAL REACTION =================
-    elif st.session_state.stage == 2:
-        st.markdown("<div class='badge'>Phase 1 of 2: Immediate Protocol</div>", unsafe_allow_html=True)
-        st.markdown("<h2 style='font-size: 42px;'>Action Items & Priorities</h2>", unsafe_allow_html=True)
-        st.write("The terminal is blank. What is your immediate first step?")
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='badge'>Incident Log v2.0</div>", unsafe_allow_html=True)
+        st.write("**ALERT:** Critical system failure detected during your end-to-end NLP project. You accidentally deleted the core preprocessing script without committing to Git. A week of critical logic is missing.")
         st.write("")
+        if st.button("EXECUTE DIAGNOSTIC PROTOCOL", type="primary"):
+            st.session_state.stage = 1
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # ================= STAGES 1-5: THE QUESTIONS =================
+    elif 1 <= st.session_state.stage <= 5:
         
-        col1, col2, col3 = st.columns(3)
+        questions = [
+            {
+                "phase": "Phase 1: The Reaction",
+                "q": "The terminal is blank after the deletion. What is your immediate first step?",
+                "options": [
+                    ("Tactical", "**Speed:** Rewrite immediately from memory to maintain momentum."),
+                    ("Architect", "**Logic:** Audit system logs and trace the fault before touching the keyboard."),
+                    ("Catalyst", "**Network:** Ping the team comms immediately to distribute the recovery load."),
+                    ("Visionary", "**Impact:** Assess how this delay affects the overall release timeline."),
+                    ("Researcher", "**Optimization:** Use this as an excuse to research a better library to rebuild it with.")
+                ]
+            },
+            {
+                "phase": "Phase 2: The Pivot",
+                "q": "You recovered the data, but your NLP model is failing to converge. How do you pivot?",
+                "options": [
+                    ("Tactical", "**Iterate:** Switch to a simpler, faster baseline model to get immediate results."),
+                    ("Architect", "**Pipeline:** Build an automated hyperparameter tuning grid to brute-force the best metrics."),
+                    ("Catalyst", "**Consult:** Ask a senior engineer or teammate for a fresh-eyes code review."),
+                    ("Visionary", "**Re-evaluate:** Question if this specific accuracy metric actually matters to the end-user."),
+                    ("Researcher", "**Deep Dive:** Open the documentation to analyze the mathematical loss function.")
+                ]
+            },
+            {
+                "phase": "Phase 3: The Deployment",
+                "q": "The model is fixed. It is time to push the application to production. What is your focus?",
+                "options": [
+                    ("Tactical", "**Ship It:** Deploy manually to get it out immediately and fix bugs live."),
+                    ("Architect", "**Containerize:** Package it with Docker and push through an automated staging environment."),
+                    ("Catalyst", "**Document:** Write comprehensive API docs so the frontend team can integrate easily."),
+                    ("Visionary", "**Analytics:** Set up A/B testing frameworks to track user engagement immediately."),
+                    ("Researcher", "**Monitor:** Set up strict drift-detection to monitor statistical degradation over time.")
+                ]
+            },
+            {
+                "phase": "Phase 4: The Legacy",
+                "q": "You inherit a massive legacy codebase with severe tech debt. How do you handle it?",
+                "options": [
+                    ("Tactical", "**Bypass:** Ignore the debt and build new features on top as quickly as possible."),
+                    ("Architect", "**Refactor:** Propose tearing down the monolith and rebuilding it into microservices."),
+                    ("Catalyst", "**Align:** Schedule a workshop to align the team on new coding standards moving forward."),
+                    ("Visionary", "**Prioritize:** Check if rewriting the backend will delay the upcoming UI revamp."),
+                    ("Researcher", "**Profile:** Benchmark the code and optimize only the most mathematically complex functions.")
+                ]
+            },
+            {
+                "phase": "Phase 5: The Pressure",
+                "q": "A high-priority feature request comes in at 4 PM on a Friday. What is your move?",
+                "options": [
+                    ("Tactical", "**Hack It:** Hack together a quick script and deploy it before 5 PM."),
+                    ("Architect", "**Queue It:** Add it to the backlog safely for the next sprint's pipeline."),
+                    ("Catalyst", "**Compromise:** Sync with the requester to find a collaborative, half-way solution."),
+                    ("Visionary", "**Prototype:** Mock up a quick UI wireframe to ensure it's what they actually want first."),
+                    ("Researcher", "**Investigate:** Spend the weekend researching the most optimal algorithmic approach.")
+                ]
+            }
+        ]
+
+        current_q = questions[st.session_state.stage - 1]
         
-        with col1:
-            st.markdown("<div class='column-header'>Priority Speed</div>", unsafe_allow_html=True)
-            st.markdown("<div class='column-text'>Rewrite immediately from memory. Rely on momentum and fresh context to recreate the logic fast.</div>", unsafe_allow_html=True)
-            st.image("images/card_speed.png", use_container_width=True)
-            if st.button("Select Speed", key="s2_speed", type="primary"):
-                st.session_state.scores["iPhone"] += 1
-                st.session_state.stage = 3
+        st.markdown(f"<span class='progress-text'>DIAGNOSTIC: 0{st.session_state.stage} / 05</span>", unsafe_allow_html=True)
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        st.markdown(f"<div class='badge'>{current_q['phase']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='font-size: 32px; margin-bottom: 20px;'>{current_q['q']}</h2>", unsafe_allow_html=True)
+        
+        for archetype, text in current_q['options']:
+            if st.button(text, key=f"q{st.session_state.stage}_{archetype}", type="secondary"):
+                st.session_state.scores[archetype] += 1
+                st.session_state.stage += 1
                 st.rerun()
                 
-        with col2:
-            st.markdown("<div class='column-header'>Priority Logic</div>", unsafe_allow_html=True)
-            st.markdown("<div class='column-text'>Audit local cache & trace the fault. Analyze system logs before touching the keyboard.</div>", unsafe_allow_html=True)
-            st.image("images/card_logic.png", use_container_width=True)
-            if st.button("Select Logic", key="s2_logic", type="primary"):
-                st.session_state.scores["MacStudio"] += 1
-                st.session_state.stage = 3
-                st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        with col3:
-            st.markdown("<div class='column-header'>Priority Network</div>", unsafe_allow_html=True)
-            st.markdown("<div class='column-text'>Ping team comms to distribute the load. Transparency and collaboration are the first line of defense.</div>", unsafe_allow_html=True)
-            st.image("images/card_network.png", use_container_width=True)
-            if st.button("Select Network", key="s2_network", type="primary"):
-                st.session_state.scores["iPadPro"] += 1
-                st.session_state.stage = 3
-                st.rerun()
-
-    # ================= STAGE 3: THE RESOLUTION =================
-    elif st.session_state.stage == 3:
-        st.markdown("<div class='badge'>Phase 2 of 2: Deployment Strategy</div>", unsafe_allow_html=True)
-        st.markdown("<h2 style='font-size: 42px;'>System Stabilization</h2>", unsafe_allow_html=True)
-        st.write("The initial shock has passed. How do you ensure this project ships on time?")
-        st.write("")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown("<div class='column-header'>Velocity Tactic</div>", unsafe_allow_html=True)
-            st.markdown("<div class='column-text'>Find a clever workaround to bypass the missing step. Hit the deadline at all costs.</div>", unsafe_allow_html=True)
-            st.image("images/card_velocity.png", use_container_width=True)
-            if st.button("Deploy Workaround", key="s3_speed", type="primary"):
-                st.session_state.scores["iPhone"] += 1
-                st.session_state.stage = 4
-                st.rerun()
-                
-        with col2:
-            st.markdown("<div class='column-header'>Infrastructure</div>", unsafe_allow_html=True)
-            st.markdown("<div class='column-text'>Architect strict CI/CD pipelines and automated Git backups to prevent recurrence.</div>", unsafe_allow_html=True)
-            st.image("images/card_infra.png", use_container_width=True)
-            if st.button("Build Infrastructure", key="s3_logic", type="primary"):
-                st.session_state.scores["MacStudio"] += 1
-                st.session_state.stage = 4
-                st.rerun()
-
-        with col3:
-            st.markdown("<div class='column-header'>Collaboration</div>", unsafe_allow_html=True)
-            st.markdown("<div class='column-text'>Organize a pair-programming swarm session to rebuild the logic together.</div>", unsafe_allow_html=True)
-            st.image("images/card_collab.png", use_container_width=True)
-            if st.button("Initiate Swarm", key="s3_network", type="primary"):
-                st.session_state.scores["iPadPro"] += 1
-                st.session_state.stage = 4
-                st.rerun()
-
-    # ================= STAGE 4: THE RESULT =================
-    elif st.session_state.stage == 4:
+    # ================= STAGE 6: THE RESULT =================
+    elif st.session_state.stage == 6:
         winner = max(st.session_state.scores, key=st.session_state.scores.get)
         
-        with st.spinner("Compiling diagnostic data..."):
+        with st.spinner("Compiling 5-point diagnostic data..."):
             time.sleep(1.5)
             
-            _, col_center, _ = st.columns([1, 4, 1])
-            with col_center:
-                st.markdown("""
-                <div style='text-align: center; margin-top: 20px; margin-bottom: 30px;'>
-                    <div class='badge'>Diagnostic complete.</div>
-                    <h1 style='font-size: 48px;'>Your Developer Profile</h1>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-                col_img, col_text = st.columns([1, 1.2])
-                
-                with col_img:
-                    if winner == "iPhone":
-                        st.image("images/iphone_speed.png", use_container_width=True)
-                    elif winner == "MacStudio":
-                        st.image("images/macstudio_logic.png", use_container_width=True)
-                    else:
-                        st.image("images/ipad_team.png", use_container_width=True)
+            st.markdown("""
+            <div style='text-align: center; margin-top: 20px; margin-bottom: 30px;'>
+                <div class='badge'>Diagnostic complete.</div>
+                <h1 style='font-size: 48px;'>Your Developer Profile</h1>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+            col_img, col_text = st.columns([1, 1.5])
+            
+            with col_img:
+                # Dynamically load the correct image based on winner
+                img_path = f"images/profile_{winner.lower()}.png"
+                if os.path.exists(img_path):
+                    st.image(img_path, use_container_width=True)
+                else:
+                    st.markdown("<div style='height:300px; background:rgba(255,255,255,0.05); border-radius:12px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1);'>[Image Placeholder]</div>", unsafe_allow_html=True)
 
-                with col_text:
-                    if winner == "iPhone":
-                        st.markdown("<h2>The Tactical Solver</h2>", unsafe_allow_html=True)
-                        st.write("You are the practical engine of any project. You bypass roadblocks, maintain momentum, and deliver results under pressure.")
-                    elif winner == "MacStudio":
-                        st.markdown("<h2>The Systems Architect</h2>", unsafe_allow_html=True)
-                        st.write("You don't just fix bugs; you build infrastructure. You prioritize deep logic and treat failures as lessons in MLOps.")
-                    else:
-                        st.markdown("<h2>The Ecosystem Catalyst</h2>", unsafe_allow_html=True)
-                        st.write("You are the central hub. You prioritize team bandwidth and know that the most resilient data products are built collaboratively.")
-                    
-                    st.divider()
-                    st.markdown("<p style='font-size: 14px; color: #a1a1aa;'>Recovery Protocol Signature:</p>", unsafe_allow_html=True)
-                    if winner == "iPhone":
-                        st.markdown("<p class='accent-text'>→ Adapt, Execute, and Keep Moving.</p>", unsafe_allow_html=True)
-                    elif winner == "MacStudio":
-                        st.markdown("<p class='accent-text'>→ Analyze Fault, Engineer the Fix.</p>", unsafe_allow_html=True)
-                    else:
-                        st.markdown("<p class='accent-text'>→ Synchronize Team, Distribute Load.</p>", unsafe_allow_html=True)
+            with col_text:
+                if winner == "Tactical":
+                    st.markdown("<h2>The Tactical Solver</h2>", unsafe_allow_html=True)
+                    st.write("You are the practical engine of any project. You bypass roadblocks, maintain momentum, and deliver results under pressure.")
+                    st.write("**• Core Strength:** High-velocity iteration and adaptability.")
+                    st.write("**• Blind Spot:** Sacrificing long-term architecture for short-term speed.")
+                    st.write("**• Ideal Role:** Rapid Prototyping, Startup Developer.")
+                elif winner == "Architect":
+                    st.markdown("<h2>The Systems Architect</h2>", unsafe_allow_html=True)
+                    st.write("You don't just fix bugs; you build infrastructure. You prioritize deep logic and treat failures as lessons in MLOps.")
+                    st.write("**• Core Strength:** Structural integrity and root-cause analysis.")
+                    st.write("**• Blind Spot:** Over-engineering simple solutions (Analysis Paralysis).")
+                    st.write("**• Ideal Role:** Data Engineer, Cloud/MLOps Specialist.")
+                elif winner == "Catalyst":
+                    st.markdown("<h2>The Ecosystem Catalyst</h2>", unsafe_allow_html=True)
+                    st.write("You are the central hub. You prioritize team bandwidth and know that the most resilient data products are built collaboratively.")
+                    st.write("**• Core Strength:** Empathy, delegation, and breaking down silos.")
+                    st.write("**• Blind Spot:** Relying too heavily on consensus, slowing down execution.")
+                    st.write("**• Ideal Role:** Technical Product Manager, Scrum Master.")
+                elif winner == "Visionary":
+                    st.markdown("<h2>The Visionary Engineer</h2>", unsafe_allow_html=True)
+                    st.write("You connect the code to the customer. You ensure that the complex backend logic actually serves a meaningful business purpose.")
+                    st.write("**• Core Strength:** User empathy and business alignment.")
+                    st.write("**• Blind Spot:** Getting distracted by UI/UX over backend stability.")
+                    st.write("**• Ideal Role:** Full-Stack Developer, Product Engineer.")
+                elif winner == "Researcher":
+                    st.markdown("<h2>The Deep Researcher</h2>", unsafe_allow_html=True)
+                    st.write("You demand mathematical rigor. You aren't satisfied with a model just 'working'; you need to understand the fundamental algorithms driving it.")
+                    st.write("**• Core Strength:** Algorithmic optimization and academic rigor.")
+                    st.write("**• Blind Spot:** Academic perfectionism delaying real-world deployment.")
+                    st.write("**• Ideal Role:** Core AI/ML Researcher, Algorithm Engineer.")
                 
-                st.markdown("</div>", unsafe_allow_html=True)
+                st.divider()
+                st.markdown("<p style='font-size: 14px; color: #a1a1aa; margin-bottom: 5px;'>Recovery Protocol Signature:</p>", unsafe_allow_html=True)
+                st.markdown(f"<p class='accent-text'>→ Primary Directive: {winner}</p>", unsafe_allow_html=True)
+            
+            st.markdown("</div>", unsafe_allow_html=True)
 
-                st.image("images/stage_clear_castle.png", use_container_width=True, caption="[ Confirmed: Destination // Apple Foundation Program ]")
-                st.write("")
-                if st.button("INSERT NEW PROJECT PROTOCOL", type="primary"):
-                    st.session_state.stage = 1
-                    st.session_state.scores = {"iPhone": 0, "MacStudio": 0, "iPadPro": 0}
-                    st.rerun()
+            st.image("images/stage_clear_castle.png", use_container_width=True, caption="[ Confirmed: Destination // Apple Foundation Program ]")
+            st.write("")
+            if st.button("RESTART DIAGNOSTIC", type="primary"):
+                st.session_state.stage = 0
+                st.session_state.scores = {"Tactical": 0, "Architect": 0, "Catalyst": 0, "Visionary": 0, "Researcher": 0}
+                st.rerun()
 
 if __name__ == "__main__":
     run_app()
